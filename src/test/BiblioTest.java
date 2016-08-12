@@ -1,18 +1,13 @@
-import dataobjects.BookObject;
-import dataobjects.BorrowsColumnEnum;
-import dataobjects.BorrowsObject;
+import dataobjects.*;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import processor.Processor;
-import dataobjects.BookColumnEnum;
 import database.GetPropertyValues;
 
 import java.io.IOException;
+import java.sql.Date;
 import java.util.List;
 
-/**
- * Created by Filip on 03.08.2016.
- */
 public class BiblioTest {
     public static String TITLE = "saturnin";
     public static String UPDATE_NEW_VALUE = "zdarbuh";
@@ -59,6 +54,40 @@ public class BiblioTest {
     public void deleteBorrowsTest() throws IOException {
         GetPropertyValues getPropertyValues = new GetPropertyValues();
         getPropertyValues.getPropValues();
+    }
+
+    @Test
+    public void insertBook() {
+        BookObject bookObject = new BookObject();
+        bookObject.setTitle("mutanti");
+        bookObject.setAuthor("tolkien");
+        bookObject.setGenre("fantasy");
+        bookObject.setIsbn(3244);
+        bookObject.setPlaceOfPublish("Praha");
+        bookObject.setPublisher("ja");
+        bookObject.setQuantity(2);
+        bookObject.setRating("vyborne");
+        bookObject.setYearOfPublish(1935);
+        processor.insertBook(bookObject);
+        List <BookObject> x = processor.selectBook("pan prstenu", BookColumnEnum.title);
+        BookObject bok = x.get(0);
+        Assert.assertEquals(bok.getAuthor_name(), "tolkien");
+    }
+
+    @Test
+    public void insertBorrows() {
+        java.util.Date utilDate = new java.util.Date();
+        java.sql.Date sqlDate = new java.sql.Date(utilDate.getTime());
+        BorrowsObject borrowsObject = new BorrowsObject();
+        borrowsObject.setId_book(2);
+        borrowsObject.setBorrowed_to("filip");
+        borrowsObject.setGuarantor("robin");
+        borrowsObject.setNote("ahojda");
+        borrowsObject.setBorrowed_from_date(sqlDate);
+        processor.insertBorrow(borrowsObject, "mutanti");
+        List <BorrowsObject> x = processor.selectBorrows("robin", BorrowsColumnEnum.guarantor);
+        BorrowsObject bok = x.get(0);
+        Assert.assertEquals(bok.getBorrowed_to(), "filip");
     }
 
 }

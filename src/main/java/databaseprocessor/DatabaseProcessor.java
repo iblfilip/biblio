@@ -26,21 +26,20 @@ public class DatabaseProcessor {
 
     public List selectItem(Object value, String column) {
         List selected = null;
-        if(tableName.equals(TableNameEnum.book.name())) {
+        if (tableName.equals(TableNameEnum.book.name())) {
             try {
-                selected = booksHandler.selectBook(tableName, value, column);
+                selected = handler.select(tableName, value, column);
+            } catch (SQLException e) {
+                logger.log(Level.SEVERE, "Exception during execution of SQL ", e);
+            }
+        } else if (tableName.equals(TableNameEnum.borrows.name())) {
+            try {
+                selected = handler.select(tableName, value, column);
             } catch (SQLException e) {
                 logger.log(Level.SEVERE, "Exception during execution of SQL ", e);
             }
         }
-        else if(tableName.equals(TableNameEnum.borrows.name())) {
-            try {
-                selected = borrowsHandler.selectBorrow(tableName, value, column);
-            } catch (SQLException e) {
-                logger.log(Level.SEVERE, "Exception during execution of SQL ", e);
-            }
-        }
-        if(selected.size()==0) {
+        if (selected.size() == 0) {
             logger.log(Level.INFO, "No results returned from SELECT statement");
         }
         return selected;
@@ -48,26 +47,16 @@ public class DatabaseProcessor {
 
     public void updateItem(Object changedValue, String changedColumn, Object searchedValue, String searchedColumn) {
         try {
-            handler.updateBooks(tableName, changedValue, changedColumn, searchedValue, searchedColumn);
-        }
-        catch(SQLException e) {
+            handler.update(tableName, changedValue, changedColumn, searchedValue, searchedColumn);
+        } catch (SQLException e) {
             logger.log(Level.SEVERE, "Exeption during execution of SQL ", e);
         }
     }
 
     public void deleteItem(Object value, String column) {
-        try{
-            handler.deleteBook(tableName, value, column);
-        }
-        catch (SQLException e) {
-            logger.log(Level.SEVERE, "Exeption during execution of SQL ", e);
-        }
-    }
-    public void insertItem(BookObject bookObject) {
-        try{
-            handler.insertBook(tableName, bookObject);
-        }
-        catch (SQLException e) {
+        try {
+            handler.delete(tableName, value, column);
+        } catch (SQLException e) {
             logger.log(Level.SEVERE, "Exeption during execution of SQL ", e);
         }
     }

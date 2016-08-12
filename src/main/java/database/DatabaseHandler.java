@@ -2,8 +2,11 @@ package database;
 
 import dataobjects.BookColumnEnum;
 import dataobjects.BookObject;
+import dataobjects.TableNameEnum;
+
 import java.io.IOException;
 import java.sql.*;
+import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -37,7 +40,7 @@ public class DatabaseHandler {
         return conn;
     }
 
-    public void updateBooks(String tableName, Object changedValue, String changedColumn, Object searchedValue, String searchedColumn) throws SQLException {
+    public void update(String tableName, Object changedValue, String changedColumn, Object searchedValue, String searchedColumn) throws SQLException {
         Connection conn = connect();
         PreparedStatement updateTable = null;
         stmt = conn.createStatement();
@@ -62,7 +65,7 @@ public class DatabaseHandler {
         conn.setAutoCommit(true);
     }
 
-    public void deleteBook(String tableName, Object title, String columnName) throws SQLException {
+    public void delete(String tableName, Object title, String columnName) throws SQLException {
         Connection conn = connect();
         PreparedStatement deleteTable = null;
         String sql = "DELETE FROM " + tableName + " WHERE " + columnName + " = ?";
@@ -84,47 +87,38 @@ public class DatabaseHandler {
         conn.setAutoCommit(true);
     }
 
-    public void insertBook(String tableName, BookObject bookObject) throws SQLException {
+    public List select(String tableName, Object value, String columnName) throws SQLException {
         Connection conn = connect();
-        PreparedStatement insertInto = null;
-        String sql = "INSERT INTO " + tableName + " (" + BookColumnEnum.title.name()+ "," + BookColumnEnum.author_name.name() +","+ BookColumnEnum.year_of_publish.name() +","+ BookColumnEnum.place_of_publish.name() +","+ BookColumnEnum.isbn.name() +","+ BookColumnEnum.genre.name() +","+ BookColumnEnum.rating.name() +","+ BookColumnEnum.publisher.name() +","+ BookColumnEnum.notes.name() +","+ BookColumnEnum.quantity.name() + ") VALUES (?,?,?,?,?,?,?,?,?,?)";
-        try {
+        PreparedStatement select = null;
+        List values= null;
+        stmt = conn.createStatement();
+        String sql = "SELECT * FROM " + tableName + " WHERE " + columnName + "=?";
+        try{
             conn.setAutoCommit(false);
-            insertInto = conn.prepareStatement(sql);
-            insertInto.setString(1,bookObject.getTitle());
-            insertInto.setString(2,bookObject.getAuthor_name());
-
-            if(bookObject.getYear_of_publish()== null)
-                insertInto.setNull(3, Types.INTEGER);
-            else insertInto.setInt(3,bookObject.getYear_of_publish());
-
-            insertInto.setString(4,bookObject.getPlace_of_publish());
-
-            if(bookObject.getIsbn()== null)
-                insertInto.setNull(5, Types.INTEGER);
-            else insertInto.setInt(5,bookObject.getIsbn());
-
-            insertInto.setString(6,bookObject.getGenre());
-            insertInto.setString(7,bookObject.getRating());
-            insertInto.setString(8,bookObject.getPublisher());
-            insertInto.setString(9,bookObject.getNotes());
-
-            if(bookObject.getQuantity()== null)
-                insertInto.setNull(10, Types.INTEGER);
-            else insertInto.setInt(10,bookObject.getQuantity());
-
-            insertInto.executeUpdate();
-            conn.commit();
-            logger.log(Level.INFO, "INSERT INTO query executed {0}", insertInto.toString());
+            select = conn.prepareStatement(sql);
+            select.setObject(1, value);
+            ResultSet rs = select.executeQuery();
+            if(tableName.equals(TableNameEnum.borrows.name())) {
+                BorrowsHandler borrowsHandler = new BorrowsHandler();
+                values = borrowsHandler.convertRsToList(rs);
+            }
+            else if(tableName.equals(TableNameEnum.book.name())) {
+                BooksHandler booksHandler = new BooksHandler();
+                values = booksHandler.convertRsToList(rs);
+            }
+            logger.log(Level.INFO, "SELECT query executed {0}", select.toString());
         }
         catch(SQLException e) {
-            logger.log(Level.SEVERE, "Exeption during executing DELETE statement", e);
+            logger.log(Level.SEVERE, "Exeption during executing SELECT statement", e);
         }
         finally {
-            if(insertInto != null)
-                insertInto.close();
+            if(select != null)
+                select.close();
         }
         conn.setAutoCommit(true);
+        return values;
     }
+
+
 
 }

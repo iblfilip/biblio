@@ -1,10 +1,10 @@
 package dataobjects;
 
-import java.util.Date;
+import java.sql.Date;
 
 public class BorrowsObject {
     int id;
-    int id_book;
+    Integer id_book;
     String borrowed_to;
     Date borrowed_from_date;
     String guarantor;
@@ -34,7 +34,8 @@ public class BorrowsObject {
         this.note = note;
     }
 
-    public int getId_book() {
+
+    public Integer getId_book() {
         return id_book;
     }
 

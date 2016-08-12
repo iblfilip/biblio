@@ -7,11 +7,15 @@ import dataobjects.*;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 public class Processor {
 
-    BooksHandler handler = new BooksHandler();
+    BooksHandler booksHandler = new BooksHandler();
+    BorrowsHandler borrowsHandler = new BorrowsHandler();
+    public Logger logger = Logger.getLogger("ProcessorLogger");
     //BookFactory bookFactory = new BookFactory();
     //BorrowsHandler borrowsHandler = new BorrowsHandler();
 
@@ -60,4 +64,28 @@ public class Processor {
         DatabaseProcessor databaseProcessor = new DatabaseProcessor(TableNameEnum.borrows);
         databaseProcessor.deleteItem(value, column.name());
     }
+
+    public void insertBook(BookObject bookObject) {
+        try {
+            booksHandler.insert(TableNameEnum.book.name(), bookObject);
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Exeption during execution of SQL ", e);
+        }
+    }
+
+    public void insertBorrow(BorrowsObject borrowsObject, String bookTitle) {
+        try {
+            DatabaseProcessor databaseProcessor = new DatabaseProcessor(TableNameEnum.book);
+            List <BookObject> bookObjects = databaseProcessor.selectItem(bookTitle, BookColumnEnum.title.name());
+            if(bookObjects.size()==1) {
+                BookObject bookObject = bookObjects.get(0);
+                borrowsObject.setId_book(bookObject.getId());
+            }
+            borrowsHandler.insert(TableNameEnum.borrows.name(), borrowsObject);
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Exeption during execution of SQL ", e);
+        }
+    }
+
+
 }
